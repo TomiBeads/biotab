@@ -34,8 +34,8 @@ def main (page: ft.Page):
 
     
     btn_registro = ft.ElevatedButton ("Registro de bioenergias", on_click =mostrar_registrodatos )
-    btn_consulta = ft.ElevatedButton ("Consulta de usuarios", on_click=mostrar_consultasUsu)
-    btn_alta = ft.ElevatedButton ("Registro de usuarios (altas)", on_click=mostrar_altaUsu)
+    btn_consulta = ft.ElevatedButton ("Consultar usuarios", on_click=mostrar_consultasUsu)
+    btn_alta = ft.ElevatedButton ("Agregar nuevo usuarios (altas)", on_click=mostrar_altaUsu)
 
 
     #Añadir a la pagina y actualizar
