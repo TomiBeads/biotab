@@ -1,88 +1,120 @@
 import flet as ft
 import airtable as at
+import principal as pr  # módulo del menú principal
+import main as mn       # módulo pantalla login
 
 def main(page: ft.Page):
+    def guardar_usuario(e: ft.ControlEvent):
+        clave = Text_clave.value.strip()
+        contra = Text_contra.value.strip()
+        contra2 = Text_contra2.value.strip()
+        nombre = Text_nombre.value.strip()
 
-    def guardar_usuario(e: ft.ControlEvent): 
-        clave = Text_clave.value
-        contra = Text_contra.value
-        contra2 = Text_contra2.value
-        nombre = Text_nombre.value
-        #Validar campos
+        # Validaciones
         if clave == "":
-            snackbar  = ft.SnackBar(ft.Text("Introduce tu clave de usuario"), bgcolor="orange", show_close_icon=True)
-            page.open(snackbar)
+            page.open(ft.SnackBar(ft.Text("Introduce tu clave de usuario"), bgcolor="red", show_close_icon=True))
             return
         if contra == "":
-            snackbar  = ft.SnackBar(ft.Text("Introduce tu contraseña"), bgcolor="orange", show_close_icon=True)
-            page.open(snackbar)
+            page.open(ft.SnackBar(ft.Text("Introduce tu contraseña"), bgcolor="red", show_close_icon=True))
             return
         if contra2 == "":
-            snackbar  = ft.SnackBar(ft.Text("Introduce tu confirmacion de contraseña"), bgcolor="orange", show_close_icon=True)
-            page.open(snackbar)
+            page.open(ft.SnackBar(ft.Text("Confirma tu contraseña"), bgcolor="red", show_close_icon=True))
             return
         if nombre == "":
-            snackbar  = ft.SnackBar(ft.Text("Introduce tu nombre de usuario"), bgcolor="orange", show_close_icon=True)
-            page.open(snackbar)
+            page.open(ft.SnackBar(ft.Text("Introduce tu nombre completo"), bgcolor="red", show_close_icon=True))
             return
-        #Confirmar contraseña
         if contra != contra2:
-            snackbar  = ft.SnackBar(ft.Text("Contraseñas Incorrectas"), bgcolor="red", show_close_icon=True)
-            page.open(snackbar)
+            page.open(ft.SnackBar(ft.Text("Contraseñas incorrectas"), bgcolor="red", show_close_icon=True))
             return
-        #Guardar los datos del usuario en la nube
-        nuevo = at.Usuario(
-            clave=clave, 
+
+        # Guardar datos en Airtable
+        nuevo = at.usuario(
+            clave=clave,
             contra=contra,
             nombre=nombre,
             admin=chk_admin.value
         )
         try:
             nuevo.save()
-            snackbar = ft.SnackBar(ft.Text("Usuario registrado"), bgcolor="blue", show_close_icon=True)
-            page.open(snackbar)
+            page.open(ft.SnackBar(ft.Text("Usuario registrado"), bgcolor="green", show_close_icon=True))
+            # Limpiar campos después de guardar
+            Text_clave.value = ""
+            Text_contra.value = ""
+            Text_contra2.value = ""
+            Text_nombre.value = ""
+            chk_admin.value = False
+            page.update()
         except Exception as error:
-            snackbar = ft.SnackBar(ft.Text(error), bgcolor="red", show_close_icon=True)
-            page.open(snackbar)
+            page.open(ft.SnackBar(ft.Text(str(error)), bgcolor="red", show_close_icon=True))
 
+    def regresar(e: ft.ControlEvent):
+        page.clean()
+        mn.main(page)  # Volver a la pantalla de login
 
-    #Configuracion de la pagina
-    page.title="Altas"
-    page.theme_mode ="light"
-    page.window.width =800
+    def principal(e: ft.ControlEvent):
+        page.clean()
+        pr.main(page)  # Ir al menú principal
+
+    def iniciar_sesion(e: ft.ControlEvent):
+        page.clean()
+        mn.main(page)  # Ir a pantalla login
+
+    # Configuración de la página
+    page.title = "Altas"
+    page.theme_mode = "light"
+    page.window.width = 800
     page.window.height = 600
     page.appbar = ft.AppBar(
-        title=ft.Text("Nuevo Usuario"),
+        title=ft.Text("Nuevo usuario"),
         center_title=True,
-        leading=ft.Icon("Person_add"),
-        color="white", 
+        leading=ft.Icon(ft.Icons.PERSON_ADD),
+        color="white",
         bgcolor="blue"
     )
 
-    #Componentes de la pagina
+
+    # Componentes de la página 
     Text_clave = ft.TextField(label="Clave del usuario")
-    Text_contra = ft.TextField(label="Contraseña", password=True)
-    Text_contra2 = ft.TextField(label="Confirmar contraseña", password=True)
-    Text_nombre = ft.TextField(label="Nombre completo",)
+    Text_contra = ft.TextField(label="Contraseña", password=True, can_reveal_password=True)
+    Text_contra2 = ft.TextField(label="Confirmar contraseña", password=True, can_reveal_password=True)
+    Text_nombre = ft.TextField(label="Nombre completo")
     chk_admin = ft.Checkbox(label="¿Eres Administrador?")
+
+
     btm_guardar = ft.FilledButton(
         text="Guardar",
-        icon=ft.Icon("Save"),
+        icon=ft.Icons.SAVE,
         on_click=guardar_usuario,
         bgcolor="green"
     )
-
     btm_cancelar = ft.FilledButton(
         text="Cancelar",
-        icon="Cancel",
-        bgcolor="red"
+        icon=ft.Icons.CANCEL,
+        bgcolor="red",
+        on_click=regresar
     )
-    fila = ft.Row(controls=[btm_guardar, btm_cancelar])
+    btm_principal = ft.FilledButton(
+        text="Regresar a menú",
+        icon=ft.Icons.ARROW_BACK,
+        bgcolor="blue",
+        on_click=principal
+    )
+    btm_login = ft.FilledButton(
+        text="Iniciar Sesión",
+        icon=ft.Icons.LOGIN,
+        bgcolor="blue",
+        on_click=iniciar_sesion
+    )
 
-    #Añadir componentes a la pagina
-    page.add(Text_clave, Text_contra, Text_contra2, Text_nombre, chk_admin, fila)
 
+    fila_botones = ft.Row(
+        controls=[btm_principal, btm_guardar, btm_cancelar, btm_login],
+        alignment=ft.MainAxisAlignment.SPACE_EVENLY
+    )
+
+    # Agregar al page 
+    page.add(Text_clave, Text_contra, Text_contra2, Text_nombre, chk_admin, fila_botones)
     page.update()
 
 if __name__ == "__main__":
-    ft.app(target=main)
+    ft.app(target=main, view=ft.AppView.WEB_BROWSER)
